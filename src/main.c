@@ -7,7 +7,7 @@ int main() {
     char *username1 = "Giang";
     char *password1 = "123";
     char *username2 = "Giangnguyentbk";
-    char *password2 = "giangtanhung3";
+    char *password2 = "somethings";
     char *username3 = "cter";
     char *password3 = "c7n";
 
@@ -23,5 +23,8 @@ int main() {
     printf("C's password: %s\n", p_userC->getPassword_(p_userC));
 
     User_delete(p_userA);
+    User_delete(p_userB);
+    User_delete(p_userC);
+    
     return 0;
 }
