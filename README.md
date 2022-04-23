@@ -6,3 +6,5 @@ This repo is first part of object-implementation programming in C language. Perh
   3. Inheritance: maybe use structs and preprocessor directives.
   4. Polymorphism: maybe use function pointers and preprocessor directives [].
   5. Interface: maybe use header declarations and preprocessor directives [].
+
+![alt text](./assets/img.png?raw=true)
