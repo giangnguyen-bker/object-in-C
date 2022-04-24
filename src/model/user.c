@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "user.h"
+
+#include "c_string.h"
+
 #define KEY_HASH "encoded"
 #define LENGTH_KEY_HASH 7
 
@@ -11,10 +15,9 @@ typedef struct hidden_User hidden_User;
 /* Private: */
 typedef struct pri_User
 {
-    char *password_;
-    char *(*encodePassword_)(hidden_User *p_hiddenUser, const char *password);
-    char *(*decodePassword_)(hidden_User *p_hiddenUser);
-    char *(*stringNew_)(const char *string);
+    char *password;
+    char *(*encodePassword)(hidden_User *p_hiddenUser, char *password);
+    char *(*decodePassword)(hidden_User *p_hiddenUser);
 } pri_User;
 
 
@@ -29,10 +32,10 @@ struct hidden_User
         is also the User address which will be passed to Deconstructor to free() */
 
     /* Public */ 
-    User pub_User_;
+    User pub_User;
 
     /* Private */
-    pri_User pri_User_;
+    pri_User pri_User;
 };
 
 
@@ -40,73 +43,58 @@ struct hidden_User
 
 
 /* Private member functions */
-static char *User_Password_encode(hidden_User *p_hiddenUser, const char *password) {
+static char *User_Password_encode(hidden_User *p_hiddenUser, char *password) {
 
-    char *e_password = p_hiddenUser->pri_User_.stringNew_(password);
-    int length_ = strlen(password);
-
-    e_password = (char *)realloc(e_password, length_ + LENGTH_KEY_HASH + 1);
-    strcat(e_password, KEY_HASH);
-    e_password[strlen(e_password)] = '\0';
+    char *p_password = password;
+    p_hiddenUser->pub_User.string->concatenate(p_password, KEY_HASH);
     
-    return e_password;
+    return p_password;
 }
 
 static char *User_Password_decode(hidden_User *p_hiddenUser) {
 
-    char *password = p_hiddenUser->pri_User_.password_;
-    int length_ = strlen(password);
-
-    password = (char *)realloc(password, (length_ - LENGTH_KEY_HASH + 1)*sizeof(char));
+    char *p_password = p_hiddenUser->pri_User.password;
+    int length = strlen(p_password);
+    int fromIndex = 0;
+    int toIndex = length - LENGTH_KEY_HASH - 1;
     
-    password[length_ - LENGTH_KEY_HASH] = '\0';
+    p_hiddenUser->pub_User.string->truncate(p_password, fromIndex, toIndex);
 
-    return password;
-}
-
-static char *User_String_new(const char *string) {
-
-    int length = strlen(string);
-    
-    char *p_string = (char *)malloc((length + 1)*sizeof(char));
-    strcpy(p_string, string);
-    p_string[length] = '\0';
-
-    return p_string;
+    return p_password;
 }
 
 /* Public member functions */
 char *getPassword(User *p_User) {
 
-    return ((hidden_User *)p_User)->pri_User_.decodePassword_((hidden_User *)p_User);
+    return ((hidden_User *)p_User)->pri_User.decodePassword((hidden_User *)p_User);
 }
 
-
-/* ---------------------------------------------------------------------------------------- */
-
-
-/* Methods definations */
 /* Constructor */
 User *User_new(const char *username,const char *password) {
     
-    hidden_User *p_hiddenUser = (hidden_User *)calloc(1, sizeof(hidden_User));
+    /* NEED_TO_FREE */
+    hidden_User *p_hiddenUser = (hidden_User *)malloc(sizeof(hidden_User));
     
-    p_hiddenUser->pri_User_.encodePassword_ = User_Password_encode;
-    p_hiddenUser->pri_User_.decodePassword_ = User_Password_decode;
-    p_hiddenUser->pri_User_.stringNew_ = User_String_new;
-    p_hiddenUser->pub_User_.getPassword_ = getPassword;
+    p_hiddenUser->pri_User.encodePassword = User_Password_encode;
+    p_hiddenUser->pri_User.decodePassword = User_Password_decode;
+    p_hiddenUser->pub_User.getPassword = getPassword;
 
-    p_hiddenUser->pub_User_.username_ = p_hiddenUser->pri_User_.stringNew_(username);
-    p_hiddenUser->pri_User_.password_ = p_hiddenUser->pri_User_.encodePassword_( \
-                                    p_hiddenUser ,password);
-        
+    /* NEED_TO_FREE */
+    p_hiddenUser->pub_User.string = C_String_new();
+    /* NEED_TO_FREE */
+    p_hiddenUser->pub_User.username =  p_hiddenUser->pub_User.string->init(username);
+    /* NEED_TO_FREE */
+    p_hiddenUser->pri_User.password = p_hiddenUser->pri_User.encodePassword(p_hiddenUser, \
+                                p_hiddenUser->pub_User.string->init(password));
+    
     return (User *)p_hiddenUser;
 }
 
 /* Deconstructor */
 void User_delete(User *p_User) {
 
-    free(((hidden_User *)p_User)->pri_User_.password_);
-    free(((hidden_User *)p_User)->pub_User_.username_);
+    C_String_delete(p_User->string);
+    free(p_User->username);
+    free(((hidden_User *)p_User)->pri_User.password);
     free((hidden_User *)p_User);
 }

@@ -15,12 +15,12 @@ int main() {
     User *p_userB = User_new(username2, password2);
     User *p_userC = User_new(username3, password3);
     
-    printf("A's username: %s\n", p_userA->username_);
-    printf("A's password: %s\n", p_userA->getPassword_(p_userA));
-    printf("B's username: %s\n", p_userB->username_);
-    printf("B's password: %s\n", p_userB->getPassword_(p_userB));
-    printf("C's username: %s\n", p_userC->username_);
-    printf("C's password: %s\n", p_userC->getPassword_(p_userC));
+    printf("A's username: %s\n", p_userA->username);
+    printf("A's password: %s\n", p_userA->getPassword(p_userA));
+    printf("B's username: %s\n", p_userB->username);
+    printf("B's password: %s\n", p_userB->getPassword(p_userB));
+    printf("C's username: %s\n", p_userC->username);
+    printf("C's password: %s\n", p_userC->getPassword(p_userC));
 
     User_delete(p_userA);
     User_delete(p_userB);
